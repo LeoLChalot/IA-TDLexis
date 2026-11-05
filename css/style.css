@@ -305,11 +305,12 @@ body {
   color: var(--line-num);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.78em;
-  min-width: 2.4rem;
+  min-width: 2.2rem;
   text-align: right;
-  padding-right: 0.8rem;
+  padding-right: 0.6rem;
   user-select: none;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 /* Masque de lecture interactif (Règle ophtalmique) */
@@ -347,6 +348,64 @@ body {
 
 .print-only {
   display: none;
+}
+
+/* =========================================================================
+   ADAPTATION RESPONSIVE & ERGONOMIE (SMARTPHONE, TABLETTE, LAPTOP, DESKTOP)
+   ========================================================================= */
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+.horizontal-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.horizontal-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Modes d'affichage mobile & tablette portrait (< 1024px) - ÉCRAN UNIQUEMENT */
+@media screen and (max-width: 1023px) {
+  .mobile-show-text #print-page-1 { display: flex !important; }
+  .mobile-show-text #print-page-2 { display: none !important; }
+  .mobile-show-text #print-page-3 { display: none !important; }
+
+  .mobile-show-questions #print-page-1 { display: none !important; }
+  .mobile-show-questions #print-page-2 { display: block !important; }
+  .mobile-show-questions #print-page-3 { display: none !important; }
+
+  .mobile-show-notes #print-page-1 { display: none !important; }
+  .mobile-show-notes #print-page-2 { display: none !important; }
+  .mobile-show-notes #print-page-3 { display: flex !important; }
+
+  .mobile-show-all #print-page-1 { display: flex !important; }
+  .mobile-show-all #print-page-2 { display: block !important; }
+  .mobile-show-all #print-page-3 { display: flex !important; }
+}
+
+/* Affichage Desktop & Laptop (>= 1024px) - ÉCRAN UNIQUEMENT */
+@media screen and (min-width: 1024px) {
+  #print-page-1 { display: flex !important; }
+  #print-page-2 { display: block !important; }
+  #print-page-3 { display: flex !important; }
+
+  .desktop-sticky-left {
+    position: sticky !important;
+    top: 5.25rem !important;
+    align-self: flex-start !important;
+    max-height: calc(100vh - 6.5rem) !important;
+    overflow-y: auto !important;
+    scrollbar-width: thin !important;
+  }
 }
 
 /* =========================================================================
@@ -398,9 +457,35 @@ body {
     display: none !important;
   }
 
-  /* Affichage des blocs formels d'impression */
+  /* Affichage inconditionnel des blocs formels d'impression */
   .print-only {
     display: block !important;
+  }
+
+  /* Rétablissement prioritaire absolu des 3 pages et de leurs conteneurs */
+  #print-page-1,
+  #print-page-2,
+  #print-page-3,
+  #main-content-grid #print-page-1,
+  #main-content-grid #print-page-2,
+  #main-content-grid #print-page-3,
+  .mobile-show-text #print-page-1,
+  .mobile-show-text #print-page-2,
+  .mobile-show-text #print-page-3,
+  .mobile-show-questions #print-page-1,
+  .mobile-show-questions #print-page-2,
+  .mobile-show-questions #print-page-3,
+  .mobile-show-notes #print-page-1,
+  .mobile-show-notes #print-page-2,
+  .mobile-show-notes #print-page-3,
+  .mobile-show-all #print-page-1,
+  .mobile-show-all #print-page-2,
+  .mobile-show-all #print-page-3 {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
   main {
@@ -408,15 +493,32 @@ body {
     padding: 0 !important;
     margin: 0 !important;
     width: 100% !important;
+    overflow: visible !important;
   }
 
-  main>.grid,
+  main > .grid,
+  #main-content-grid,
   .lg\:col-span-7,
-  .lg\:col-span-5 {
+  .lg\:col-span-5,
+  #main-content-grid > div {
     display: block !important;
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
+    visibility: visible !important;
+    overflow: visible !important;
+  }
+
+  /* Cartes médicales et accordéons (toujours dépliés et visibles à l'impression) */
+  #questions-card,
+  #psycho-card,
+  #notes-card,
+  #psycho-details-container,
+  #psycho-details-container.hidden,
+  #print-clinical-notes-display {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
   /* Élimination stricte de tous les fonds colorés, badges, chips et bordures d'écran */

@@ -16,7 +16,7 @@
   <!-- Feuille de styles personnalisée -->
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="font-lexend min-h-screen flex flex-col antialiased">
+<body class="font-lexend min-h-screen flex flex-col antialiased overflow-x-hidden">
 
   <!-- Masque de lecture / Guide visuel interactif -->
   <div id="reading-mask">
@@ -27,26 +27,26 @@
 
   <!-- En-tête de l'application -->
   <header class="no-print app-header backdrop-blur-md border-b sticky top-0 z-30 shadow-xs">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4">
       
-      <!-- Logo et Badge Professionnel -->
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <!-- Logo et Titre -->
+      <div class="flex items-center space-x-2.5 sm:space-x-3 shrink-0">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
           </svg>
         </div>
         <div>
-          <div class="flex items-center gap-2">
-            <span class="font-bold text-base tracking-tight">IA - <span class="text-blue-500">TDLexis</span></span>
-            <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[10px] font-semibold px-2 py-0.5 rounded-full">Orthophonie</span>
+          <div class="flex items-center gap-1.5 sm:gap-2">
+            <span class="font-bold text-sm sm:text-base tracking-tight whitespace-nowrap">IA - <span class="text-blue-500">TDLexis</span></span>
+            <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-full">Ortho</span>
           </div>
-          <p class="text-xs app-text-dim hidden sm:block">Recueil étalonné pour le Trouble Développemental du Langage</p>
+          <p class="text-[11px] app-text-dim hidden md:block">Recueil étalonné pour le Trouble Développemental du Langage</p>
         </div>
       </div>
 
-      <!-- Barre d'outils d'adaptation ergonomique (Typographie & Thème) -->
-      <div class="flex items-center flex-wrap gap-2 text-xs">
+      <!-- Barre d'outils Desktop & Laptop (Visible sur >= lg) -->
+      <div class="hidden lg:flex items-center flex-wrap gap-2 text-xs">
         
         <!-- Sélecteur de Police Adaptée -->
         <div class="flex items-center rounded-lg border app-border app-subcard p-1">
@@ -94,19 +94,90 @@
           </button>
         </div>
 
-        <!-- Impression A4 Médicale -->
-        <button onclick="window.print()" class="app-btn-active px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors" title="Imprimer le protocole A4 médical formel (3 pages sobres et épurées)">
+      </div>
+
+      <!-- Contrôles Mobiles & Tablette (< lg) + Impression universelle -->
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        
+        <!-- Bouton Déroulant Ergonomie / Affichage (< lg) -->
+        <button onclick="toggleDisplayDrawer()" id="display-drawer-toggle-btn" class="lg:hidden px-2.5 py-1.5 rounded-lg border app-border app-subcard text-xs font-semibold flex items-center gap-1.5 transition-all" title="Adapter l'affichage (police, taille, interligne, thèmes)">
+          <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+          <span class="hidden sm:inline">Affichage</span>
+        </button>
+
+        <!-- Sélecteur rapide de thème compact (< lg) -->
+        <div class="lg:hidden flex items-center rounded-lg border app-border app-subcard p-0.5">
+          <button onclick="setTheme('default')" id="mobile-theme-btn-default" class="theme-pill px-2 py-1 rounded text-xs font-bold" title="Clair">☀️</button>
+          <button onclick="setTheme('cream')" id="mobile-theme-btn-cream" class="theme-pill px-2 py-1 rounded text-xs font-bold" title="Crème">📜</button>
+          <button onclick="setTheme('dark')" id="mobile-theme-btn-dark" class="theme-pill px-2 py-1 rounded text-xs font-bold" title="Sombre">🌙</button>
+        </div>
+
+        <!-- Bouton Impression A4 Médicale -->
+        <button onclick="window.print()" class="app-btn-active px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors shrink-0" title="Imprimer le protocole A4 médical formel (3 pages sobres et épurées)">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-          <span>Imprimer A4</span>
+          <span class="hidden sm:inline">Imprimer</span><span>A4</span>
         </button>
 
       </div>
+
     </div>
+
+    <!-- Tiroir déroulant d'adaptation ergonomique (< lg) -->
+    <div id="mobile-display-drawer" class="lg:hidden no-print border-t app-border app-subcard px-4 py-3 hidden transition-all duration-200">
+      <div class="max-w-7xl mx-auto space-y-3 text-xs">
+        
+        <!-- Police -->
+        <div>
+          <span class="block font-semibold app-text-dim mb-1 uppercase text-[10px] tracking-wider">Police adaptée :</span>
+          <div class="grid grid-cols-3 gap-1.5 p-1 rounded-lg border app-border app-card">
+            <button onclick="setFont('lexend')" id="drawer-font-lexend-btn" class="app-btn-active py-1.5 px-2 rounded-md font-medium text-center">Lexend</button>
+            <button onclick="setFont('dys')" id="drawer-font-dys-btn" class="app-btn-inactive py-1.5 px-2 rounded-md font-medium text-center">OpenDys</button>
+            <button onclick="setFont('inter')" id="drawer-font-inter-btn" class="app-btn-inactive py-1.5 px-2 rounded-md font-medium text-center">Inter</button>
+          </div>
+        </div>
+
+        <!-- Taille & Espacements -->
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <span class="block font-semibold app-text-dim mb-1 uppercase text-[10px] tracking-wider">Taille du texte :</span>
+            <div class="flex items-center justify-between border app-border rounded-lg p-1 app-card h-10">
+              <button onclick="changeFontSize(-1)" class="w-8 h-8 flex items-center justify-center rounded font-bold app-text-muted hover:app-btn-active">A-</button>
+              <button onclick="resetFontSize()" id="drawer-font-size-label" class="font-mono text-xs font-bold px-1" title="Réinitialiser">18px</button>
+              <button onclick="changeFontSize(1)" class="w-8 h-8 flex items-center justify-center rounded font-bold app-text-muted hover:app-btn-active">A+</button>
+            </div>
+          </div>
+          <div>
+            <span class="block font-semibold app-text-dim mb-1 uppercase text-[10px] tracking-wider">Interligne & Lettres :</span>
+            <div class="flex items-center justify-between border app-border rounded-lg p-1 app-card h-10">
+              <button onclick="toggleLineHeight()" class="flex-1 text-center py-1 font-medium app-text-muted hover:app-text-main flex items-center justify-center gap-1">
+                <span>Inter :</span>
+                <span id="drawer-line-height-label" class="font-bold">1.8</span>
+              </button>
+              <span class="w-[1px] h-4 bg-slate-300 dark:bg-slate-700"></span>
+              <button onclick="toggleLetterSpacing()" class="flex-1 text-center py-1 font-medium app-text-muted hover:app-text-main">
+                <span id="drawer-spacing-label">Normal</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Guide oculaire / Règle tactile -->
+        <div class="pt-1 border-t app-border flex items-center justify-between gap-2">
+          <button onclick="toggleReadingMask()" id="drawer-mask-toggle-btn" class="flex-1 py-2 px-3 rounded-lg border app-border app-card text-xs font-medium app-text-muted flex items-center justify-center gap-2">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+            <span id="drawer-mask-status-text">Masque oculaire : Off</span>
+          </button>
+          <button onclick="toggleDisplayDrawer()" class="px-3 py-2 rounded-lg bg-blue-600 text-white font-semibold text-xs">Fermer</button>
+        </div>
+
+      </div>
+    </div>
+
   </header>
 
   <!-- Barre de sélection des classes scolaires (CE2 à 3ème) -->
   <nav class="no-print app-nav border-b px-4 sm:px-6 py-2">
-    <div class="max-w-7xl mx-auto flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+    <div class="max-w-7xl mx-auto flex items-center gap-1.5 horizontal-scroll pb-1 sm:pb-0">
       <span class="text-xs font-bold uppercase tracking-wider app-text-dim mr-1 shrink-0">Classe :</span>
       
       <button onclick="selectLevel('ce2')" id="nav-btn-ce2" class="level-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all app-btn-active">CE2 (8-9 ans)</button>
@@ -119,37 +190,66 @@
     </div>
   </nav>
 
-  <!-- Sélecteur de texte au sein de la classe & Minuteur -->
-  <div class="no-print app-header border-b px-4 sm:px-6 py-2.5">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-2">
-        <span class="text-xs font-medium app-text-dim">Sélection de l'histoire :</span>
-        <div id="text-selector-container" class="flex gap-2">
+  <!-- Sélecteur de texte au sein de la classe & Minuteur (Responsive & fluide) -->
+  <div class="no-print app-header border-b px-3 sm:px-6 py-2 sm:py-2.5">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-2.5 sm:gap-3">
+      
+      <!-- Sélection de l'histoire (Responsive, scroll horizontal sans dépassement d'écran) -->
+      <div class="flex items-center gap-2 overflow-hidden w-full md:w-auto min-w-0">
+        <span class="text-xs font-bold uppercase tracking-wider app-text-dim shrink-0">Histoire :</span>
+        <div id="text-selector-container" class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto horizontal-scroll py-0.5 max-w-full">
           <!-- Injecté dynamiquement par JS -->
         </div>
       </div>
 
       <!-- Chronomètre de passation / fluence -->
-      <div class="flex items-center gap-2 text-xs app-subcard border app-border rounded-lg px-2.5 py-1">
-        <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-        <span class="app-text-dim">Chrono :</span>
-        <span id="timer-display" class="font-mono font-bold">00:00</span>
-        <button onclick="toggleTimer()" id="timer-btn" class="text-blue-400 hover:underline font-semibold px-1">Démarrer</button>
-        <button onclick="resetTimer()" class="app-text-dim hover:app-text-main px-1">Reset</button>
+      <div class="flex items-center justify-between sm:justify-start gap-2 text-xs app-subcard border app-border rounded-lg px-2.5 py-1.5 shrink-0 self-start md:self-auto w-full sm:w-auto">
+        <div class="flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span class="app-text-dim">Chrono :</span>
+          <span id="timer-display" class="font-mono font-bold">00:00</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <button onclick="toggleTimer()" id="timer-btn" class="px-2 py-0.5 rounded text-blue-400 hover:app-btn-active font-semibold">Démarrer</button>
+          <button onclick="resetTimer()" class="px-2 py-0.5 rounded app-text-dim hover:app-text-main">Reset</button>
+        </div>
       </div>
+
     </div>
   </div>
 
   <!-- Contenu Principal (Grille 2 colonnes écran / 2 pages strictes impression) -->
   <!-- Contenu Principal (Grille 2 colonnes écran / 3 pages strictes impression) -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <!-- Sélecteur d'onglets ergonomique pour Mobile & Tablette (< lg) -->
+    <div class="lg:hidden no-print mb-4">
+      <div class="flex p-1 rounded-xl app-subcard border app-border text-xs font-semibold gap-1">
+        <button onclick="setMobileView('text')" id="tab-btn-text" class="flex-1 py-2 px-2 rounded-lg text-center transition-all flex items-center justify-center gap-1.5 app-btn-active">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+          <span>Texte</span>
+        </button>
+        <button onclick="setMobileView('questions')" id="tab-btn-questions" class="flex-1 py-2 px-2 rounded-lg text-center transition-all flex items-center justify-center gap-1.5 app-btn-inactive">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span>Questions (5)</span>
+        </button>
+        <button onclick="setMobileView('notes')" id="tab-btn-notes" class="flex-1 py-2 px-2 rounded-lg text-center transition-all flex items-center justify-center gap-1.5 app-btn-inactive">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+          <span>Observations</span>
+        </button>
+        <button onclick="setMobileView('all')" id="tab-btn-all" class="py-2 px-2.5 rounded-lg text-center transition-all flex items-center justify-center gap-1 app-btn-inactive" title="Afficher tout en continu">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          <span class="hidden sm:inline">Tout</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mobile-show-text" id="main-content-grid">
       
       <!-- ===================================================================
            PAGE 1 IMPRESSION / COLONNE GAUCHE ÉCRAN : Fiche de lecture Patient
            Calibrée sobrement sur 1 page A4 sans déborder.
            =================================================================== -->
-      <section id="print-page-1" class="lg:col-span-7 flex flex-col gap-6">
+      <section id="print-page-1" class="lg:col-span-7 flex flex-col gap-6 desktop-sticky-left">
         
         <!-- En-tête sobre et formel Page 1 (Fiche de Lecture Patient) -->
         <div class="print-only print-header-formal">
@@ -168,7 +268,7 @@
         </div>
 
         <!-- Carte de lecture du Texte (Page 1) -->
-        <div id="text-card" class="app-card rounded-2xl border p-6 sm:p-7 shadow-xs">
+        <div id="text-card" class="app-card rounded-2xl border p-4 sm:p-6 lg:p-7 shadow-xs">
           
           <!-- En-tête du texte -->
           <div class="flex flex-wrap items-start justify-between gap-3 border-b app-border pb-4 mb-4">
@@ -242,7 +342,7 @@
           </div>
 
           <!-- Carte des 5 Questions Orales d'Échange & Reformulation -->
-          <div id="questions-card" class="app-card rounded-2xl border p-5 sm:p-6 shadow-xs">
+          <div id="questions-card" class="app-card rounded-2xl border p-4 sm:p-6 shadow-xs">
             <div class="flex items-center justify-between border-b app-border pb-3 mb-4 no-print">
               <div>
                 <h2 class="font-bold text-base flex items-center gap-2">
@@ -281,7 +381,7 @@
           </div>
 
           <!-- Carte Psycholinguistique & Sources Scientifiques -->
-          <div id="psycho-card" class="app-card rounded-2xl border p-5 shadow-xs">
+          <div id="psycho-card" class="app-card rounded-2xl border p-4 sm:p-6 shadow-xs">
             <div class="flex items-center justify-between cursor-pointer no-print" onclick="togglePsychoSection()">
               <div class="flex items-center gap-2.5">
                 <div class="p-1.5 rounded-lg" style="background-color: var(--badge-accent-bg); color: var(--badge-accent-text);">
@@ -349,7 +449,7 @@
           </div>
 
           <!-- Bloc-Notes d'Observation Clinique & Remarques du Praticien -->
-          <div id="notes-card" class="app-card rounded-2xl border p-5 shadow-xs">
+          <div id="notes-card" class="app-card rounded-2xl border p-4 sm:p-6 shadow-xs">
             <div class="flex items-center justify-between mb-3 no-print">
               <div class="flex items-center gap-2">
                 <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
@@ -406,7 +506,7 @@
   </main>
 
   <!-- Notification Toast -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 border border-slate-700 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-200 pointer-events-none">
+  <div id="toast" class="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-5 sm:max-w-md z-50 bg-slate-900 border border-slate-700 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-200 pointer-events-none">
     <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
     <span id="toast-message">Action effectuée</span>
   </div>

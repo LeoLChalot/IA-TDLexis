@@ -28,6 +28,46 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 /* =========================================================================
+   GESTION DU MODE MOBILE & TIROIR D'ADAPTATION ERGONOMIQUE
+   ========================================================================= */
+let currentMobileView = 'text';
+
+function setMobileView(view) {
+  currentMobileView = view;
+  ['text', 'questions', 'notes', 'all'].forEach(v => {
+    const btn = document.getElementById(`tab-btn-${v}`);
+    if (btn) {
+      if (v === view) {
+        btn.className = "flex-1 py-2 px-2 rounded-lg text-center transition-all flex items-center justify-center gap-1.5 app-btn-active";
+      } else {
+        btn.className = "flex-1 py-2 px-2 rounded-lg text-center transition-all flex items-center justify-center gap-1.5 app-btn-inactive";
+      }
+    }
+  });
+
+  const mainGrid = document.getElementById('main-content-grid');
+  if (mainGrid) {
+    mainGrid.classList.remove('mobile-show-text', 'mobile-show-questions', 'mobile-show-notes', 'mobile-show-all');
+    mainGrid.classList.add(`mobile-show-${view}`);
+  }
+}
+
+function toggleDisplayDrawer() {
+  const drawer = document.getElementById('mobile-display-drawer');
+  const btn = document.getElementById('display-drawer-toggle-btn');
+  if (!drawer) return;
+
+  const isHidden = drawer.classList.contains('hidden');
+  if (isHidden) {
+    drawer.classList.remove('hidden');
+    if (btn) btn.classList.add('app-btn-active');
+  } else {
+    drawer.classList.add('hidden');
+    if (btn) btn.classList.remove('app-btn-active');
+  }
+}
+
+/* =========================================================================
    GESTION DE LA NAVIGATION : NIVEAUX & TEXTES
    ========================================================================= */
 function selectLevel(levelKey) {
@@ -56,16 +96,19 @@ function selectText(index) {
 function renderTextSelector() {
   const container = document.getElementById('text-selector-container');
   const texts = DATABASE[currentLevel];
+  if (!texts || !container) return;
   container.innerHTML = '';
 
   texts.forEach((txt, idx) => {
     const btn = document.createElement('button');
     const isActive = idx === currentTextIndex;
-    btn.className = `px-3 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${isActive
-        ? 'app-btn-active'
+    btn.className = `px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 ${
+      isActive
+        ? 'app-btn-active shadow-xs'
         : 'app-subcard app-text-muted border app-border hover:opacity-90'
-      }`;
-    btn.innerHTML = `<span>Texte ${idx + 1} :</span> <span class="font-normal opacity-90">${txt.theme}</span>`;
+    }`;
+    btn.setAttribute('title', `Texte ${idx + 1} : ${txt.theme} — ${txt.title}`);
+    btn.innerHTML = `<span class="shrink-0 font-bold">Texte ${idx + 1} :</span> <span class="font-normal opacity-90 truncate max-w-[130px] sm:max-w-[200px] md:max-w-none">${escapeHtml(txt.theme)}</span>`;
     btn.onclick = () => selectText(idx);
     container.appendChild(btn);
   });
@@ -104,7 +147,7 @@ function renderCurrentText() {
         num.textContent = (index + 1).toString().padStart(2, '0'); */
 
     const content = document.createElement('span');
-    content.className = 'flex-1 pl-1 cursor-text';
+    content.className = 'flex-1 pl-1 cursor-text select-text break-words';
     content.textContent = line;
 
     // row.appendChild(num);
@@ -210,18 +253,25 @@ function setTheme(theme) {
   const btnCream = document.getElementById('theme-btn-cream');
   const btnDark = document.getElementById('theme-btn-dark');
 
-  [btnDefault, btnCream, btnDark].forEach(btn => {
+  const mobDefault = document.getElementById('mobile-theme-btn-default');
+  const mobCream = document.getElementById('mobile-theme-btn-cream');
+  const mobDark = document.getElementById('mobile-theme-btn-dark');
+
+  [btnDefault, btnCream, btnDark, mobDefault, mobCream, mobDark].forEach(btn => {
     if (btn) btn.classList.remove('active');
   });
 
   if (theme === 'cream') {
     document.body.classList.add('theme-cream');
     if (btnCream) btnCream.classList.add('active');
+    if (mobCream) mobCream.classList.add('active');
   } else if (theme === 'dark') {
     document.body.classList.add('theme-dark');
     if (btnDark) btnDark.classList.add('active');
+    if (mobDark) mobDark.classList.add('active');
   } else {
     if (btnDefault) btnDefault.classList.add('active');
+    if (mobDefault) mobDefault.classList.add('active');
   }
 }
 
@@ -232,13 +282,16 @@ function setFont(fontName) {
 
   ['lexend', 'dys', 'inter'].forEach(f => {
     const btn = document.getElementById(`font-${f}-btn`);
-    if (btn) {
-      if (f === fontName) {
-        btn.className = "app-btn-active px-2.5 py-1 rounded font-medium shadow-xs";
-      } else {
-        btn.className = "app-btn-inactive px-2.5 py-1 rounded font-medium";
+    const drawerBtn = document.getElementById(`drawer-font-${f}-btn`);
+    const isActive = f === fontName;
+
+    [btn, drawerBtn].forEach(b => {
+      if (b) {
+        b.className = isActive 
+          ? "app-btn-active py-1.5 px-2 sm:px-2.5 rounded font-medium shadow-xs text-center"
+          : "app-btn-inactive py-1.5 px-2 sm:px-2.5 rounded font-medium text-center";
       }
-    }
+    });
   });
 
   if (fontName === 'lexend') textContainer.classList.add('font-lexend');
@@ -258,7 +311,11 @@ function resetFontSize() {
 }
 
 function applyFontSize() {
-  document.getElementById('font-size-label').textContent = `${currentFontSize}px`;
+  const label = document.getElementById('font-size-label');
+  const drawerLabel = document.getElementById('drawer-font-size-label');
+  if (label) label.textContent = `${currentFontSize}px`;
+  if (drawerLabel) drawerLabel.textContent = `${currentFontSize}px`;
+
   document.getElementById('text-reading-container').style.fontSize = `${currentFontSize}px`;
   updateMaskSlitHeight();
 }
@@ -268,7 +325,11 @@ function toggleLineHeight() {
   else if (currentLineHeight === 2.2) currentLineHeight = 1.5;
   else currentLineHeight = 1.8;
 
-  document.getElementById('line-height-label').textContent = `Interligne: ${currentLineHeight}`;
+  const label = document.getElementById('line-height-label');
+  const drawerLabel = document.getElementById('drawer-line-height-label');
+  if (label) label.textContent = `${currentLineHeight}`;
+  if (drawerLabel) drawerLabel.textContent = `${currentLineHeight}`;
+
   document.getElementById('text-reading-container').style.lineHeight = currentLineHeight.toString();
   updateMaskSlitHeight();
 }
@@ -276,20 +337,25 @@ function toggleLineHeight() {
 function toggleLetterSpacing() {
   const container = document.getElementById('text-reading-container');
   const label = document.getElementById('spacing-label');
+  const drawerLabel = document.getElementById('drawer-spacing-label');
 
+  let textVal = "Normal";
   if (currentLetterSpacing === 'normal') {
     currentLetterSpacing = 'wide';
     container.style.letterSpacing = '0.05em';
-    label.textContent = "Lettres: Large";
+    textVal = "Aéré";
   } else if (currentLetterSpacing === 'wide') {
     currentLetterSpacing = 'extrawide';
     container.style.letterSpacing = '0.1em';
-    label.textContent = "Lettres: Très large";
+    textVal = "Très aéré";
   } else {
     currentLetterSpacing = 'normal';
     container.style.letterSpacing = 'normal';
-    label.textContent = "Lettres: Normal";
+    textVal = "Normal";
   }
+
+  if (label) label.textContent = textVal;
+  if (drawerLabel) drawerLabel.textContent = textVal;
 }
 
 function loadSettings() {
@@ -305,19 +371,35 @@ function toggleReadingMask() {
   maskActive = !maskActive;
   const mask = document.getElementById('reading-mask');
   const btn = document.getElementById('mask-toggle-btn');
+  const drawerBtn = document.getElementById('drawer-mask-toggle-btn');
   const status = document.getElementById('mask-status-text');
+  const drawerStatus = document.getElementById('drawer-mask-status-text');
 
   if (maskActive) {
     mask.classList.add('active');
-    btn.classList.add('app-btn-active');
-    btn.classList.remove('app-text-muted');
-    status.textContent = "Masque : On";
-    showToast("Règle de lecture activée (suivez avec le pointeur)");
+    if (btn) {
+      btn.classList.add('app-btn-active');
+      btn.classList.remove('app-text-muted');
+    }
+    if (drawerBtn) {
+      drawerBtn.classList.add('app-btn-active');
+      drawerBtn.classList.remove('app-text-muted');
+    }
+    if (status) status.textContent = "Masque : On";
+    if (drawerStatus) drawerStatus.textContent = "Masque : On";
+    showToast("Règle de lecture tactile & curseur activée");
   } else {
     mask.classList.remove('active');
-    btn.classList.remove('app-btn-active');
-    btn.classList.add('app-text-muted');
-    status.textContent = "Masque : Off";
+    if (btn) {
+      btn.classList.remove('app-btn-active');
+      btn.classList.add('app-text-muted');
+    }
+    if (drawerBtn) {
+      drawerBtn.classList.remove('app-btn-active');
+      drawerBtn.classList.add('app-text-muted');
+    }
+    if (status) status.textContent = "Masque : Off";
+    if (drawerStatus) drawerStatus.textContent = "Masque : Off";
   }
 }
 
@@ -331,16 +413,31 @@ function setupReadingMask() {
   const win = document.getElementById('mask-window');
   const bottom = document.getElementById('mask-bottom');
 
-  window.addEventListener('mousemove', (e) => {
+  function updateMask(clientY) {
     if (!maskActive) return;
     const slitH = currentFontSize * currentLineHeight * 1.5;
-    const posY = Math.max(0, e.clientY - (slitH / 2));
+    const posY = Math.max(0, clientY - (slitH / 2));
 
     top.style.height = `${posY}px`;
     win.style.top = `${posY}px`;
     win.style.height = `${slitH}px`;
     bottom.style.top = `${posY + slitH}px`;
-  });
+  }
+
+  window.addEventListener('mousemove', (e) => updateMask(e.clientY));
+
+  // Prise en charge tactile (iPad, tablettes, smartphones)
+  window.addEventListener('touchmove', (e) => {
+    if (maskActive && e.touches && e.touches.length > 0) {
+      updateMask(e.touches[0].clientY);
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchstart', (e) => {
+    if (maskActive && e.touches && e.touches.length > 0) {
+      updateMask(e.touches[0].clientY);
+    }
+  }, { passive: true });
 }
 
 /* =========================================================================
@@ -581,12 +678,26 @@ function preparePrintView() {
     document.querySelectorAll('.print-title-auto').forEach(el => el.textContent = textData.title);
     document.querySelectorAll('.print-theme-auto').forEach(el => el.textContent = textData.themeTag);
     document.querySelectorAll('.print-length-auto').forEach(el => el.textContent = `${textData.lines.length} lignes (~${totalWords} mots)`);
+    
+    // Forcer le rendu complet des questions pour la Page 2
+    renderQuestions(textData.questions);
+  }
+
+  // S'assurer que le mode d'affichage mobile ne masque aucune page
+  const mainGrid = document.getElementById('main-content-grid');
+  if (mainGrid) {
+    mainGrid.classList.remove('mobile-show-text', 'mobile-show-questions', 'mobile-show-notes');
+    mainGrid.classList.add('mobile-show-all');
   }
 
   updatePrintNotesDisplay();
 }
 
 window.addEventListener('beforeprint', preparePrintView);
+
+window.addEventListener('afterprint', () => {
+  setMobileView(currentMobileView);
+});
 
 // Exposition explicite sur window pour les gestionnaires inline du DOM
 if (typeof window !== 'undefined') {
@@ -621,4 +732,6 @@ if (typeof window !== 'undefined') {
   window.showToast = showToast;
   window.preparePrintView = preparePrintView;
   window.updatePrintNotesDisplay = updatePrintNotesDisplay;
+  window.setMobileView = setMobileView;
+  window.toggleDisplayDrawer = toggleDisplayDrawer;
 }
