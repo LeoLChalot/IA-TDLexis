@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrthoTextes TDL - Recueil Clinique de Compréhension & Reformulation</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Polices Google : Lexend (fluence de lecture prouvée) et Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Feuille de styles personnalisée -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="font-lexend min-h-screen flex flex-col antialiased">
+
+  <!-- Masque de lecture / Guide visuel interactif -->
+  <div id="reading-mask">
+    <div id="mask-top" class="mask-top" style="top: 0; height: 120px;"></div>
+    <div id="mask-window" class="mask-window" style="top: 120px; height: 50px;"></div>
+    <div id="mask-bottom" class="mask-bottom" style="top: 170px; bottom: 0;"></div>
+  </div>
+
+  <!-- En-tête de l'application -->
+  <header class="no-print app-header backdrop-blur-md border-b sticky top-0 z-30 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Logo et Badge Professionnel -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-base tracking-tight">OrthoTextes <span class="text-blue-500">TDL</span></span>
+            <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[10px] font-semibold px-2 py-0.5 rounded-full">Orthophonie</span>
+          </div>
+          <p class="text-xs app-text-dim hidden sm:block">Recueil étalonné pour le Trouble Développemental du Langage</p>
+        </div>
+      </div>
+
+      <!-- Barre d'outils d'adaptation ergonomique (Typographie & Thème) -->
+      <div class="flex items-center flex-wrap gap-2 text-xs">
+        
+        <!-- Sélecteur de Police Adaptée -->
+        <div class="flex items-center rounded-lg border app-border app-subcard p-1">
+          <button id="font-lexend-btn" onclick="setFont('lexend')" class="app-btn-active px-2.5 py-1 rounded font-medium shadow-xs" title="Lexend : optimisée pour la fluence de lecture">Lexend</button>
+          <button id="font-dys-btn" onclick="setFont('dys')" class="app-btn-inactive px-2.5 py-1 rounded font-medium" title="OpenDyslexic : lettres asymétriques">OpenDys</button>
+          <button id="font-inter-btn" onclick="setFont('inter')" class="app-btn-inactive px-2.5 py-1 rounded font-medium" title="Inter : sans-serif moderne">Inter</button>
+        </div>
+
+        <!-- Réglages Taille & Espacements -->
+        <div class="flex items-center rounded-lg border app-border app-subcard p-1">
+          <button onclick="changeFontSize(-1)" class="w-7 h-7 flex items-center justify-center rounded font-bold app-text-muted hover:bg-slate-700/30" title="Réduire la taille">A-</button>
+          <button onclick="resetFontSize()" id="font-size-label" class="px-1.5 font-mono text-[11px] font-bold" title="Cliquer pour réinitialiser">18px</button>
+          <button onclick="changeFontSize(1)" class="w-7 h-7 flex items-center justify-center rounded font-bold app-text-muted hover:bg-slate-700/30" title="Agrandir la taille">A+</button>
+          
+          <span class="w-[1px] h-4 bg-slate-700/50 mx-1"></span>
+          
+          <button onclick="toggleLineHeight()" class="px-2 py-1 rounded font-medium flex items-center gap-1 app-text-muted hover:app-text-main" title="Modifier l'interligne">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            <span id="line-height-label" class="hidden md:inline">1.8</span>
+          </button>
+          <button onclick="toggleLetterSpacing()" class="px-2 py-1 rounded font-medium border-l app-border app-text-muted hover:app-text-main" title="Espacement des lettres">
+            <span id="spacing-label">Normal</span>
+          </button>
+        </div>
+
+        <!-- Règle de lecture / Guide oculaire -->
+        <button id="mask-toggle-btn" onclick="toggleReadingMask()" class="px-2.5 py-1.5 rounded-lg border app-border app-subcard text-xs font-medium app-text-muted flex items-center gap-1.5 hover:opacity-90 transition-all">
+          <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+          <span id="mask-status-text">Masque : Off</span>
+        </button>
+
+        <!-- Sélecteur de Thème Visuel (Conforme WCAG AAA) -->
+        <div class="flex items-center rounded-lg border app-border app-subcard p-1">
+          <button onclick="setTheme('default')" id="theme-btn-default" class="theme-pill px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all" title="Thème Clair clinique reposant (WCAG AAA)">
+            <span class="w-3 h-3 rounded-full bg-slate-100 border border-slate-300"></span>
+            <span class="hidden md:inline">Clair</span>
+          </button>
+          <button onclick="setTheme('cream')" id="theme-btn-cream" class="theme-pill px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all" title="Thème Papier Crème anti-fatigue & photosensibilité (WCAG AAA)">
+            <span class="w-3 h-3 rounded-full bg-amber-100 border border-amber-300"></span>
+            <span class="hidden md:inline">Crème</span>
+          </button>
+          <button onclick="setTheme('dark')" id="theme-btn-dark" class="theme-pill px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all" title="Thème Sombre haute lisibilité (WCAG AAA)">
+            <span class="w-3 h-3 rounded-full bg-slate-900 border border-slate-700"></span>
+            <span class="hidden md:inline">Sombre</span>
+          </button>
+        </div>
+
+        <!-- Impression A4 Médicale -->
+        <button onclick="window.print()" class="app-btn-active px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors" title="Imprimer le protocole A4 médical formel (3 pages sobres et épurées)">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+          <span>Imprimer A4</span>
+        </button>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Barre de sélection des classes scolaires (CE2 à 3ème) -->
+  <nav class="no-print app-nav border-b px-4 sm:px-6 py-2">
+    <div class="max-w-7xl mx-auto flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+      <span class="text-xs font-bold uppercase tracking-wider app-text-dim mr-1 shrink-0">Classe :</span>
+      
+      <button onclick="selectLevel('ce2')" id="nav-btn-ce2" class="level-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all app-btn-active">CE2 (8-9 ans)</button>
+      <button onclick="selectLevel('cm1')" id="nav-btn-cm1" class="level-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all app-btn-inactive">CM1 (9-10 ans)</button>
+      <button onclick="selectLevel('cm2')" id="nav-btn-cm2" class="level-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all app-btn-inactive">CM2 (10-11 ans)</button>
+      <button onclick="selectLevel('6eme')" id="nav-btn-6eme" class="level-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all app-btn-inactive">6ème (11-12 ans)</button>
+      <button onclick="selectLevel('5eme')" id="nav-btn-5eme" class="level-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all app-btn-inactive">5ème (12-13 ans)</button>
+      <button onclick="selectLevel('4eme')" id="nav-btn-4eme" class="level-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all app-btn-inactive">4ème (13-14 ans)</button>
+      <button onclick="selectLevel('3eme')" id="nav-btn-3eme" class="level-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all app-btn-inactive">3ème (14-15 ans)</button>
+    </div>
+  </nav>
+
+  <!-- Sélecteur de texte au sein de la classe & Minuteur -->
+  <div class="no-print app-header border-b px-4 sm:px-6 py-2.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-medium app-text-dim">Sélection de l'histoire :</span>
+        <div id="text-selector-container" class="flex gap-2">
+          <!-- Injecté dynamiquement par JS -->
+        </div>
+      </div>
+
+      <!-- Chronomètre de passation / fluence -->
+      <div class="flex items-center gap-2 text-xs app-subcard border app-border rounded-lg px-2.5 py-1">
+        <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span class="app-text-dim">Chrono :</span>
+        <span id="timer-display" class="font-mono font-bold">00:00</span>
+        <button onclick="toggleTimer()" id="timer-btn" class="text-blue-400 hover:underline font-semibold px-1">Démarrer</button>
+        <button onclick="resetTimer()" class="app-text-dim hover:app-text-main px-1">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu Principal (Grille 2 colonnes écran / 2 pages strictes impression) -->
+  <!-- Contenu Principal (Grille 2 colonnes écran / 3 pages strictes impression) -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      
+      <!-- ===================================================================
+           PAGE 1 IMPRESSION / COLONNE GAUCHE ÉCRAN : Fiche de lecture Patient
+           Calibrée sobrement sur 1 page A4 sans déborder.
+           =================================================================== -->
+      <section id="print-page-1" class="lg:col-span-7 flex flex-col gap-6">
+        
+        <!-- En-tête sobre et formel Page 1 (Fiche de Lecture Patient) -->
+        <div class="print-only print-header-formal">
+          <div class="flex justify-between items-baseline border-b border-slate-900 pb-1 mb-2">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-900">OrthoTextes TDL</span>
+              <span class="text-xs text-slate-600 font-normal"> — Fiche Clinique de Lecture</span>
+            </div>
+            <div class="text-right text-[10px] text-slate-500 font-medium">Page 1 / 3</div>
+          </div>
+          <div class="flex justify-between items-center text-xs text-slate-700 py-1 border-b border-slate-300 mb-3">
+            <div><strong>Patient :</strong> <span class="print-patient-auto">______________________</span></div>
+            <div><strong>Date :</strong> <span class="print-date-auto"></span></div>
+            <div><strong>Niveau / Classe :</strong> <span class="print-level-auto"></span></div>
+          </div>
+        </div>
+
+        <!-- Carte de lecture du Texte (Page 1) -->
+        <div id="text-card" class="app-card rounded-2xl border p-6 sm:p-7 shadow-xs">
+          
+          <!-- En-tête du texte -->
+          <div class="flex flex-wrap items-start justify-between gap-3 border-b app-border pb-4 mb-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1.5 no-print">
+                <span id="text-theme-badge" class="px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wide" style="background-color: var(--badge-accent-bg); color: var(--badge-accent-text); border: 1px solid var(--badge-accent-border);">Thème</span>
+                <span id="text-level-badge" class="px-2 py-0.5 rounded-md text-[11px] font-bold app-subcard border app-border app-text-muted">Niveau</span>
+              </div>
+              <h2 id="text-title" class="text-xl sm:text-2xl font-bold tracking-tight">Titre du texte</h2>
+              <!-- Sous-titre sobre pour impression uniquement -->
+              <p class="print-only text-xs text-slate-600 mt-1">
+                Thématique : <span class="print-theme-auto font-medium"></span> — Longueur : <span class="print-length-auto">16 lignes</span>
+              </p>
+            </div>
+
+            <!-- Bouton Synthèse Vocale (Web Speech API avec voix ralentie adaptée au TDL) -->
+            <button onclick="toggleTextToSpeech()" id="tts-btn" class="no-print inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border app-border app-subcard text-xs font-semibold app-text-muted hover:opacity-90 transition-all">
+              <svg id="tts-icon" class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+              <span id="tts-label">Écouter (voix ralentie)</span>
+            </button>
+          </div>
+
+          <!-- Corps du texte avec lignes numérotées -->
+          <div id="text-reading-container" class="leading-relaxed font-normal select-text relative">
+            <!-- Injecté dynamiquement par JS -->
+          </div>
+
+          <!-- Barre de comptage et validation -->
+          <div class="mt-6 pt-3 border-t app-border flex items-center justify-between text-xs app-text-dim text-card-footer">
+            <span id="text-length-stats">Longueur : 16 lignes</span>
+            <span class="px-2.5 py-0.5 rounded text-[11px] font-semibold flex items-center gap-1 no-print" style="background-color: var(--badge-success-bg); color: var(--badge-success-text); border: 1px solid var(--badge-success-border);">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              Syntaxe & Lexique calibrés TDL
+            </span>
+            <span class="print-only text-[10px] text-slate-500 italic">
+              Protocole étalonné pour le Trouble Développemental du Langage — Normes Manulex, LME & Lisibilité Flesch
+            </span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ===================================================================
+           COLONNE DROITE ÉCRAN (Outils du Praticien)
+           Divisée à l'impression en :
+           - PAGE 2 : Protocole d'Échange & Questions Orales
+           - PAGE 3 : Analyse Psycholinguistique & Observations Praticien
+           =================================================================== -->
+      <div class="lg:col-span-5 flex flex-col gap-6">
+        
+        <!-- PAGE 2 IMPRESSION : Protocole des 5 Questions Orales -->
+        <section id="print-page-2">
+          
+          <!-- En-tête sobre et formel Page 2 -->
+          <div class="print-only print-header-formal">
+            <div class="flex justify-between items-baseline border-b border-slate-900 pb-1 mb-2">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-900">Protocole d'Évaluation Orale & Reformulation</span>
+                <span class="text-xs text-slate-600 font-normal"> (Guide TDL)</span>
+              </div>
+              <div class="text-right text-[10px] text-slate-500 font-medium">Page 2 / 3</div>
+            </div>
+            <div class="flex justify-between items-center text-xs text-slate-700 py-1 border-b border-slate-300 mb-3">
+              <div><strong>Patient :</strong> <span class="print-patient-auto">______________________</span></div>
+              <div><strong>Date :</strong> <span class="print-date-auto"></span></div>
+              <div><strong>Texte :</strong> <span class="print-title-auto font-medium"></span> (<span class="print-level-auto"></span>)</div>
+            </div>
+            <p class="text-[10px] text-slate-500 italic mb-4">
+              Consigne : Poser chaque question oralement. Évaluer la précision des informations restituées, la complexité syntaxique et le besoin d'étayage.
+            </p>
+          </div>
+
+          <!-- Carte des 5 Questions Orales d'Échange & Reformulation -->
+          <div id="questions-card" class="app-card rounded-2xl border p-5 sm:p-6 shadow-xs">
+            <div class="flex items-center justify-between border-b app-border pb-3 mb-4 no-print">
+              <div>
+                <h2 class="font-bold text-base flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-md bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">5Q</span>
+                  Protocole d'Échange & Reformulation
+                </h2>
+                <p class="text-xs app-text-dim">Questions orales destinées à stimuler l'évocation et la syntaxe</p>
+              </div>
+              <span class="text-[10px] px-2 py-0.5 rounded font-bold" style="background-color: var(--badge-accent-bg); color: var(--badge-accent-text); border: 1px solid var(--badge-accent-border);">Guide TDL</span>
+            </div>
+
+            <!-- Liste des 5 questions interactives (et formatées sobrement pour l'impression) -->
+            <div id="questions-list-container" class="space-y-3">
+              <!-- Injecté dynamiquement par JS -->
+            </div>
+          </div>
+
+        </section>
+
+        <!-- PAGE 3 IMPRESSION : Analyse Psycholinguistique & Observations Praticien -->
+        <section id="print-page-3" class="flex flex-col gap-6">
+          
+          <!-- En-tête sobre et formel Page 3 -->
+          <div class="print-only print-header-formal">
+            <div class="flex justify-between items-baseline border-b border-slate-900 pb-1 mb-2">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-900">Analyse Psycholinguistique & Observations Cliniques</span>
+              </div>
+              <div class="text-right text-[10px] text-slate-500 font-medium">Page 3 / 3</div>
+            </div>
+            <div class="flex justify-between items-center text-xs text-slate-700 py-1 border-b border-slate-300 mb-3">
+              <div><strong>Patient :</strong> <span class="print-patient-auto">______________________</span></div>
+              <div><strong>Date :</strong> <span class="print-date-auto"></span></div>
+              <div><strong>Texte :</strong> <span class="print-title-auto font-medium"></span> (<span class="print-level-auto"></span>)</div>
+            </div>
+          </div>
+
+          <!-- Carte Psycholinguistique & Sources Scientifiques -->
+          <div id="psycho-card" class="app-card rounded-2xl border p-5 shadow-xs">
+            <div class="flex items-center justify-between cursor-pointer no-print" onclick="togglePsychoSection()">
+              <div class="flex items-center gap-2.5">
+                <div class="p-1.5 rounded-lg" style="background-color: var(--badge-accent-bg); color: var(--badge-accent-text);">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+                <div>
+                  <h3 class="font-bold text-sm">Validation Psycholinguistique & Critères TDL</h3>
+                  <p class="text-[11px] app-text-dim">Base Manulex, Longueur Moyenne d'Énoncé (LME) et Indice Flesch-Kandel</p>
+                </div>
+              </div>
+              <button id="psycho-toggle-icon" class="app-text-dim hover:app-text-main p-1">
+                <svg class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+              </button>
+            </div>
+
+            <!-- Titre sobre pour impression uniquement -->
+            <div class="print-only mb-2">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900">1. Caractéristiques Psycholinguistiques du Texte Support</h3>
+            </div>
+
+            <!-- Détails scientifiques dépliables (toujours ouverts et épurés à l'impression) -->
+            <div id="psycho-details-container" class="mt-4 pt-4 border-t app-border text-xs space-y-3">
+              
+              <!-- Statistiques métriques (présentées sous forme de tableau épuré en impression) -->
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-center psycho-metrics-grid">
+                <div class="app-subcard p-2.5 rounded-xl border app-border psycho-metric-item">
+                  <div class="text-[10px] uppercase font-bold app-text-dim metric-label">Lisibilité Flesch</div>
+                  <div id="psycho-readability" class="text-base font-extrabold metric-flesch metric-val">86 / 100</div>
+                  <div id="psycho-readability-desc" class="text-[10px] app-text-dim metric-desc">Très accessible</div>
+                </div>
+                <div class="app-subcard p-2.5 rounded-xl border app-border psycho-metric-item">
+                  <div class="text-[10px] uppercase font-bold app-text-dim metric-label">LME (Mots/Phrase)</div>
+                  <div id="psycho-lme" class="text-base font-extrabold metric-lme metric-val">8.4 mots</div>
+                  <div class="text-[10px] app-text-dim metric-desc">Mémoire de travail préservée</div>
+                </div>
+                <div class="app-subcard p-2.5 rounded-xl border app-border col-span-2 sm:col-span-1 psycho-metric-item">
+                  <div class="text-[10px] uppercase font-bold app-text-dim metric-label">Base Manulex</div>
+                  <div id="psycho-manulex" class="text-base font-extrabold metric-manulex metric-val">G1-G2 > 95%</div>
+                  <div class="text-[10px] app-text-dim metric-desc">Fréquence prioritaire</div>
+                </div>
+              </div>
+
+              <!-- Détails de l'étalonnage -->
+              <div class="space-y-2 app-text-muted leading-relaxed psycho-narrative">
+                <div>
+                  <strong class="font-semibold app-text-heading">1. Fréquence lexicale Manulex (Lété, Sprenger-Charolles & Colé, 2004) :</strong>
+                  <p id="psycho-manulex-desc" class="mt-0.5 text-[11px]"></p>
+                </div>
+                <div>
+                  <strong class="font-semibold app-text-heading">2. Contrôle de la complexité syntaxique TDL (Maillart & Parisse, 2006 ; Bishop et al., 2017) :</strong>
+                  <p id="psycho-syntax-desc" class="mt-0.5 text-[11px]"></p>
+                </div>
+                <div>
+                  <strong class="font-semibold app-text-heading">3. Gestion des anaphores et connecteurs temporels :</strong>
+                  <p id="psycho-anaphora-desc" class="mt-0.5 text-[11px]"></p>
+                </div>
+              </div>
+
+              <!-- Références académiques formelles -->
+              <div class="p-2.5 rounded-lg border app-border text-[10px] app-text-dim leading-tight psycho-references" style="background-color: var(--badge-accent-bg);">
+                <span class="font-semibold" style="color: var(--badge-accent-text);">Références cliniques :</span> Lété et al. (2004) <em>Manulex: A grade-level lexical database from French elementary school readers</em> ; Bishop et al. (2017) <em>CATALISE consensus on Developmental Language Disorder</em> ; Maillart & Parisse (2006) <em>Le trouble développemental du langage et la complexité syntaxique</em>.
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Bloc-Notes d'Observation Clinique & Remarques du Praticien -->
+          <div id="notes-card" class="app-card rounded-2xl border p-5 shadow-xs">
+            <div class="flex items-center justify-between mb-3 no-print">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                <h3 class="font-bold text-sm">Observations & Remarques du Praticien</h3>
+              </div>
+              <span id="save-status" class="text-[10px] app-text-dim">Auto-sauvegarde active</span>
+            </div>
+
+            <!-- Titre sobre pour impression uniquement -->
+            <div class="print-only mb-2">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900">2. Observations Cliniques de Séance</h3>
+            </div>
+
+            <!-- Code Patient Anonymisé (Écran) -->
+            <div class="mb-3 flex items-center gap-2 no-print">
+              <label class="text-[11px] font-medium app-text-dim whitespace-nowrap">Patient / Code :</label>
+              <input type="text" id="patient-code-input" placeholder="Ex: Lucas D. (ou TDL-04)" oninput="updatePatientCode()" class="flex-1 text-xs border app-border rounded-md px-2.5 py-1.5 app-subcard app-text-main focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Puces rapides de marqueurs cliniques (Écran) -->
+            <div class="mb-3 no-print">
+              <p class="text-[10px] app-text-dim mb-1.5 font-medium">Insérer un marqueur d'observation en un clic :</p>
+              <div class="flex flex-wrap gap-1.5">
+                <button onclick="insertNoteTag('[Manque du mot]')" class="text-[10px] app-subcard hover:opacity-80 px-2 py-0.5 rounded border app-border font-medium">+ Manque du mot</button>
+                <button onclick="insertNoteTag('[Dyssyntaxe]')" class="text-[10px] app-subcard hover:opacity-80 px-2 py-0.5 rounded border app-border font-medium">+ Dyssyntaxe</button>
+                <button onclick="insertNoteTag('[Inférence réussie]')" class="text-[10px] px-2 py-0.5 rounded border font-medium" style="background-color: var(--badge-success-bg); color: var(--badge-success-text); border-color: var(--badge-success-border);">+ Inférence réussie</button>
+                <button onclick="insertNoteTag('[Besoin d\'étayage]')" class="text-[10px] app-subcard hover:opacity-80 px-2 py-0.5 rounded border app-border font-medium">+ Besoin d'étayage</button>
+                <button onclick="insertNoteTag('[Évocation fluide]')" class="text-[10px] px-2 py-0.5 rounded border font-medium" style="background-color: var(--badge-accent-bg); color: var(--badge-accent-text); border-color: var(--badge-accent-border);">+ Évocation fluide</button>
+                <button onclick="insertNoteTag('[Élision phonologique]')" class="text-[10px] app-subcard hover:opacity-80 px-2 py-0.5 rounded border app-border font-medium">+ Élision phono</button>
+              </div>
+            </div>
+
+            <!-- Zone de saisie des observations (Écran) -->
+            <textarea id="clinical-notes-area" oninput="saveClinicalNotes()" rows="4" placeholder="Noter ici les réussites orales, le besoin d'amorces, le niveau d'informativité, les reformulations spontanées..." class="no-print w-full text-xs p-3 rounded-lg border app-border app-subcard app-text-main focus:outline-none focus:ring-1 focus:ring-blue-500 font-sans leading-relaxed resize-y"></textarea>
+
+            <!-- Affichage sobre et formel des remarques pour l'impression -->
+            <div id="print-clinical-notes-display" class="print-only"></div>
+
+            <!-- Actions de gestion (Écran) -->
+            <div class="mt-2.5 flex items-center justify-between text-xs no-print">
+              <button onclick="copyClinicalNotes()" class="text-blue-400 hover:underline font-semibold flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                <span>Copier pour le dossier patient</span>
+              </button>
+              <button onclick="clearClinicalNotes()" class="app-text-dim hover:text-rose-400">Effacer</button>
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 border border-slate-700 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-200 pointer-events-none">
+    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    <span id="toast-message">Action effectuée</span>
+  </div>
+
+  <!-- Pied de page -->
+  <footer class="no-print mt-auto border-t app-border app-header py-4 text-center text-xs app-text-dim">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p>OrthoTextes TDL - Recueil étalonné pour enfants et adolescents présentant un Trouble Développemental du Langage.</p>
+      <p class="font-medium">Normes Manulex, LME & Lisibilité Flesch-Kandel.</p>
+    </div>
+  </footer>
+
+  <!-- Scripts JavaScript : Données cliniques et logique applicative -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
